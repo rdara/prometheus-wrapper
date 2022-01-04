@@ -1,0 +1,48 @@
+apply plugin: 'idea'
+apply plugin: 'scala'
+apply from: rootProject.file("versions_scala_2.12.gradle")
+
+group 'pers.rdara'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+defaultTasks 'clean', 'build'
+
+sourceCompatibility=1.11
+targetCompatibility=1.11
+
+dependencies {
+    implementation "com.typesafe.scala-logging:scala-logging_${versions.scala}:${versions.scala_logging}"
+    implementation "com.fasterxml.jackson.module:jackson-module-scala_${versions.scala}:${versions.jackson}"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}"
+    implementation "org.slf4j:slf4j-simple:${versions.slf4j_simple}"
+
+    // Metrics Dependencies
+    implementation("io.prometheus:simpleclient:${versions.prometheus}")
+    implementation("io.prometheus:simpleclient_common:${versions.prometheus}")
+    implementation("io.prometheus:simpleclient_hotspot:${versions.prometheus}")
+
+    //akka
+    implementation "com.typesafe.akka:akka-stream_${versions.scala}:${versions.akka}"
+    implementation "com.typesafe.akka:akka-actor_${versions.scala}:${versions.akka}"
+    implementation "com.typesafe.akka:akka-http_${versions.scala}:${versions.akkahttp}"
+    implementation "com.typesafe.akka:akka-http-jackson_${versions.scala}:${versions.akkahttp}"
+
+    //tests
+    testImplementation "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}"
+    testImplementation "org.pegdown:pegdown:${versions.pegdown}"
+}
+
+// task to run ScalaTests
+task scalaTest(dependsOn: ['testClasses'], type: JavaExec) {
+    mainClass = 'org.scalatest.tools.Runner'
+    args = ['-R', 'build/classes/scala/test', '-o', '-u', 'build/test-results', '-h', 'build/test-results/html']
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+// make Test task run ScalaTests first then JUnit tests. Needs when running tests from command line using ./gradlew
+test.dependsOn scalaTest

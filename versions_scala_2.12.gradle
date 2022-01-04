@@ -1,0 +1,14 @@
+ext.versions = [:]
+versions.scala = 2.12
+
+versions.scalaTest = '3.0.5'
+versions.slf4j = '1.7.25'
+versions.prometheus = '0.6.0'
+versions.scala_logging = '3.9.4'
+versions.akka = '2.5.19'
+versions.akkahttp = '10.1.5'
+versions.jaeger = '1.0.0'
+versions.jackson = '2.9.8'
+versions.slf4j_simple = '1.7.32'
+versions.pegdown = '1.4.2'
+versions.jupiter = '5.8.2'
