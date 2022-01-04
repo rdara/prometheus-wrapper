@@ -37,6 +37,12 @@ dependencies {
     testImplementation "org.pegdown:pegdown:${versions.pegdown}"
 }
 
+// for main class applications
+task run(dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'pers.rdara.akka.http.test.server.TestServer'
+    classpath sourceSets.main.runtimeClasspath
+}
+
 // task to run ScalaTests
 task scalaTest(dependsOn: ['testClasses'], type: JavaExec) {
     mainClass = 'org.scalatest.tools.Runner'
