@@ -36,8 +36,8 @@ class TestServer(appContext: ApplicationContext) extends CommonExceptionHandler(
         handleRejections(rejectionHandler) {
           handleExceptions(exceptionHandler) {
             initiatePrometheusMetrics(materializer) {
-            completePrometheusMetrics(materializer) {
-              services
+              completePrometheusMetrics(materializer) {
+                services
             }
           }
         }
@@ -75,6 +75,9 @@ object TestServer extends App with LazyLogging {
 
   val host = appConfig.server.host
   val port = appConfig.server.port
+
+  //Force evaluation of metrics configuration at the beginning itself
+  appConfig.metrics
 
   implicit val materializer = ActorMaterializer()(appContext.Implicits.implicitSystem)
   testServer.startServer(host, port, appConfig).foreach { binding ⇒
