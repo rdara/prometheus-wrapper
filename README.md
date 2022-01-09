@@ -86,6 +86,7 @@ The following resource file provides the configuration
 
 System properties like 
 >**akka.http.conf.metrics.no_of_labels**
+> 
 prevail over the metrics.conf. System properties do take precedence. 
 pers.rdara.prometheus.wrapper.metrics.LabelledMetricsTest test demonstrates system properties precedence.
 
@@ -118,4 +119,17 @@ This prometheus-wrapper project demonstrates the flexibility of using metrics wi
 
 The fat AbstractMetrics handles all the required nuances and constrains of prometheus library. A tiny derivered classes like DefaultMetrics and LabelledMetrics offering the user all the needed flexibility.
 The "default" values eases the user to supply the same values every time while using the api.
+
+### Gradle versions
+versions_$xxxx.gradle is an idea to consolidate the "versions" of all the dependencies. This is demonstrated by
+> build.gradle
+>>apply from: rootProject.file("versions_scala_2.12.gradle")
+>
+> versions_scala_3.gradle
+> 
+> version_scala_2.12.gradle
+> 
+The backward incompatible nature of scala has challenged the scala developers and there are scala verion dependencies everywhere. This approach mitigates this.
+Also, if one still wants to use the "same versions" of dependencies across the organization, then the versions file can reside as a git sub module and all the git modules could depend on that.
+
 
