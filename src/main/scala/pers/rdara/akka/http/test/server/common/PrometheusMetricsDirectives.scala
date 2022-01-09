@@ -8,7 +8,7 @@ import akka.stream.Materializer
 import pers.rdara.akka.http.test.server.TestServer
 import Utilities.{getDuration, startTimeHeaderName}
 import pers.rdara.akka.http.test.server.services.Metrics
-import pers.rdara.prometheus.wrapper.metrics.DefaultMetrics
+import pers.rdara.prometheus.wrapper.metrics.{DefaultMetrics, LabelledMetrics}
 
 import scala.concurrent.ExecutionContext
 
@@ -27,7 +27,8 @@ trait PrometheusMetricsDirectives {
 
   def initiatePrometheusMetrics(implicit materializer: Materializer): Directive0 = {
     mapRequest(request => {
-      DefaultMetrics.startMessage(Metrics.getMetricKeys(request): _*)
+      LabelledMetrics.startMessage(Metrics.getMetricLables(request))
+      DefaultMetrics.startMessage(Metrics.getMetricKeys(request))
       request
     })
   }
@@ -37,7 +38,8 @@ trait PrometheusMetricsDirectives {
     mapInnerRoute(route ⇒ ctx =>
       route(ctx) map {
         case Complete(response) ⇒
-          DefaultMetrics.completedMessage(getDuration(ctx.request), Metrics.getMetricKeys(ctx.request): _*)
+          LabelledMetrics.completedMessage(getDuration(ctx.request), Metrics.getMetricLables(ctx.request))
+          DefaultMetrics.completedMessage(getDuration(ctx.request), Metrics.getMetricKeys(ctx.request))
           Complete(response)
         case routeResult@Rejected(rejections) ⇒
           routeResult

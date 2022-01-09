@@ -1,17 +1,18 @@
 package pers.rdara.prometheus.wrapper.metrics
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers, PrivateMethodTester}
-import pers.rdara.akka.http.test.server.services.Metrics
+import pers.rdara.prometheus.wrapper.metrics.interfaces.MetricsInterface
 /**
  * @author Ramesh Dara
  * @since Jun-2019
  */
-class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  BeforeAndAfterEach {
+class DefaultMetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  BeforeAndAfterEach {
 
-  val defaultMetric: Metrics = DefaultMetrics
-  val metricKey: String = "group_module_test"
+  val defaultMetric: AbstractMetrics = DefaultMetrics
+  val metricKeys: Seq[String] = Seq("group","module","test")
   val getMetrics = PrivateMethod[(MetricValue)]('getMetrics)
-  val metricValue = defaultMetric invokePrivate getMetrics(Seq(metricKey))
+  val metricValue = defaultMetric invokePrivate getMetrics(metricKeys)
+//  val metricValue =  defaultMetric invokePrivate getMetrics(metricKeys, Seq.empty[String])
 
   var baseTotalMessages = 0
   var baseInflightMessages = 0
@@ -35,12 +36,52 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
     metricValue.processingTime.get().count - baseProcessingTimeCount shouldBe 0
   }
 
-  it should "correctly count 1  message" in {
-    defaultMetric.startMessage(metricKey)
+  //The following tests have their own exclusive metric key sets and doenst depend upon beforeEach values
+  it should "correctly count 1  message with null keyset" in {
+    val curMetricKeySet = null
+    val priorMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    val priorTotal = priorMetricValue.total.get.toInt
+    defaultMetric.startMessage(curMetricKeySet)
 
     defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
     defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
 
+    val currentMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    currentMetricValue.total.get - priorTotal shouldBe 1
+  }
+
+  it should "correctly count 1  message with empty keyset" in {
+    val curMetricKeySet = Seq.empty[String]
+    val priorMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    val priorTotal = priorMetricValue.total.get.toInt
+    defaultMetric.startMessage(curMetricKeySet)
+
+    defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
+    defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
+
+    val currentMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    currentMetricValue.total.get.toInt - priorTotal shouldBe 1
+  }
+
+  it should "correctly count 1  message with keyset with null values" in {
+    val curMetricKeySet = metricKeys :+ null
+    val priorMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    val priorTotal = priorMetricValue.total.get.toInt
+    defaultMetric.startMessage(curMetricKeySet)
+
+    defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
+    defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
+
+    val currentMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
+    currentMetricValue.total.get - priorTotal shouldBe 1
+  }
+
+  //The following tests ban upon the same metricKeys and hence before each values
+  it should "correctly count 1  message" in {
+    defaultMetric.startMessage(metricKeys)
+
+    defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
+    defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
 
     metricValue.total.get - baseTotalMessages shouldBe 1
     metricValue.inflight.get - baseInflightMessages shouldBe 1
@@ -48,8 +89,8 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
   }
 
   it should "correctly count 2 messages" in {
-    defaultMetric.startMessage(metricKey)
-    defaultMetric.startMessage(metricKey)
+    defaultMetric.startMessage(metricKeys)
+    defaultMetric.startMessage(metricKeys)
 
     defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 2
     defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 2
@@ -66,8 +107,8 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
   }
 
   it should "correctly count 1  message" in {
-    defaultMetric.startMessage(metricKey)
-    defaultMetric.completedMessage(10, metricKey)
+    defaultMetric.startMessage(metricKeys)
+    defaultMetric.completedMessage(10, metricKeys)
 
     metricValue.total.get - baseTotalMessages shouldBe 1
     metricValue.inflight.get - baseInflightMessages shouldBe 0
@@ -76,11 +117,11 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
   }
 
   it should "correctly count 2 messages" in {
-    defaultMetric.startMessage(metricKey)
-    defaultMetric.startMessage(metricKey)
+    defaultMetric.startMessage(metricKeys)
+    defaultMetric.startMessage(metricKeys)
 
-    defaultMetric.completedMessage(10, metricKey)
-    defaultMetric.completedMessage(20, metricKey)
+    defaultMetric.completedMessage(10, metricKeys)
+    defaultMetric.completedMessage(20, metricKeys)
 
     metricValue.total.get - baseTotalMessages shouldBe 2
     metricValue.inflight.get - baseInflightMessages shouldBe 0
@@ -90,14 +131,14 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
 
   "erroredMessage" should "be correctly count 1 message" in {
 
-    val errorMetricValue = defaultMetric invokePrivate getMetrics(Seq(metricKey, "errored"))
+    val errorMetricValue = defaultMetric invokePrivate getMetrics(metricKeys :+ "errored")
 
     errorMetricValue.total.get shouldBe 0
     errorMetricValue.inflight.get shouldBe 0
     errorMetricValue.processingTime.get().count shouldBe 0
 
-    defaultMetric.startMessage(metricKey)
-    defaultMetric.erroredMessage(10, metricKey)
+    defaultMetric.startMessage(metricKeys)
+    defaultMetric.erroredMessage(10, metricKeys)
 
     errorMetricValue.total.get shouldBe 1
     errorMetricValue.inflight.get shouldBe 0
@@ -112,9 +153,9 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
 
   "No duplicate registrations" should "occur with the same keys" in {
 
-    defaultMetric.startMessage("outbound","email", "dup")
-    defaultMetric.startMessage("outbound","email", "dup")
-    defaultMetric.startMessage("outbound","email", "dup")
+    defaultMetric.startMessage(Seq("outbound","email", "dup"))
+    defaultMetric.startMessage(Seq("outbound","email", "dup"))
+    defaultMetric.startMessage(Seq("outbound","email", "dup"))
 
     val dupMetricValue = defaultMetric invokePrivate getMetrics(Seq("outbound","email", "dup"))
 
@@ -124,7 +165,7 @@ class MetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  
   "Concurrent registrations" should "work as expected" in {
 
    (1 to 50).par.foreach {
-      _ => defaultMetric.startMessage("outbound","email", "par")
+      _ => defaultMetric.startMessage(Seq("outbound","email", "par"))
     }
 
     val dupMetricValue = defaultMetric invokePrivate getMetrics(Seq("outbound","email", "par"))

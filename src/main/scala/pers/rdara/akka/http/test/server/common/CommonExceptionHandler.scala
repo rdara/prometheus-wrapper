@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import Utilities.getDuration
 import pers.rdara.akka.http.test.server.model.GenericErrorResponse
 import pers.rdara.akka.http.test.server.services.Metrics
-import pers.rdara.prometheus.wrapper.metrics.DefaultMetrics
+import pers.rdara.prometheus.wrapper.metrics.{DefaultMetrics, LabelledMetrics}
 
 import javax.security.sasl.AuthenticationException
 
@@ -20,7 +20,8 @@ abstract class CommonExceptionHandler(appContext: ApplicationContext) extends Ja
 
   private def extractErrorRequest(e: Throwable): Directive1[(HttpRequest)] = {
     extractRequest.flatMap { request ⇒
-      DefaultMetrics.erroredMessage(getDuration(request), Metrics.getMetricKeys(request):_*)
+      LabelledMetrics.erroredMessage(getDuration(request), Metrics.getMetricLables(request))
+      DefaultMetrics.erroredMessage(getDuration(request), Metrics.getMetricKeys(request))
       Directives.provide(request)
     }
   }
