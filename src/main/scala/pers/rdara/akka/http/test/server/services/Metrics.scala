@@ -46,7 +46,7 @@ object Metrics extends Directives {
   def getMetricLables(request: HttpRequest): Seq[String] = {
     val labels = Seq(request.method.value) ++
       request.getUri().asScala().path.toString().split(SingleSlash.toString()).filter(_.nonEmpty)
-    val no_of_lables = ApplicationConfig.Default.metrics.max_no_of_labels
+    val no_of_lables = ApplicationConfig.Default.metrics.no_of_labels
     labels.padTo(no_of_lables,"").take(no_of_lables)
   }
 

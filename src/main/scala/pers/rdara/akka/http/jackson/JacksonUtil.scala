@@ -1,4 +1,4 @@
-package pers.rdara.akka.http.test.server.common
+package pers.rdara.akka.http.jackson
 
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.{ContentTypeRange, ContentTypes, StatusCodes}
@@ -9,16 +9,20 @@ import akka.util.ByteString
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.annotation.{JsonSetter, Nulls}
 import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, PropertyNamingStrategy}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 import scala.reflect.runtime.universe._
-import java.lang.reflect.{ParameterizedType, Type ⇒ JavaType}
+import java.lang.reflect.{ParameterizedType, Type => JavaType}
+import scala.io.{Codec, Source}
+import scala.reflect.ClassTag
+import scala.util.Try
 
 /**
  * @author Ramesh Dara
-*/
+ */
 
-object Jackson {
+object JacksonUtil {
 
   val objectMapper: ObjectMapper = new ObjectMapper()
     .registerModule(DefaultScalaModule)
@@ -26,6 +30,15 @@ object Jackson {
     .setSerializationInclusion(Include.NON_NULL)
     .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
     .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY))
+
+  def readFromResource[T](resource: String, classType: Class[T]): Try[T] = {
+    implicit val codec = Codec.UTF8.charSet
+    Try(objectMapper.readValue(Source.fromResource(resource).bufferedReader(), classType))
+  }
+
+  def fromJson[T](json: String)(implicit classTag: ClassTag[T]): T = {
+    objectMapper.readValue(json, classTag.runtimeClass.asInstanceOf[Class[T]])
+  }
 
   object AkkaHttpSupport {
 
@@ -80,7 +93,7 @@ object Jackson {
      */
     implicit def unmarshaller[A](implicit ct: TypeTag[A]): FromEntityUnmarshaller[A] = {
       jsonStringUnmarshaller.map { data ⇒
-        Jackson.objectMapper.readValue(data, typeReference[A]).asInstanceOf[A]
+        JacksonUtil.objectMapper.readValue(data, typeReference[A]).asInstanceOf[A]
       }
     }
 
@@ -88,7 +101,7 @@ object Jackson {
      * `A` => HTTP entity
      */
     implicit def marshaller[Object]: ToEntityMarshaller[Object] = {
-      akka.http.javadsl.marshallers.jackson.Jackson.marshaller[Object](Jackson.objectMapper)
+      akka.http.javadsl.marshallers.jackson.Jackson.marshaller[Object](JacksonUtil.objectMapper)
     }
 
   }

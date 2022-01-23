@@ -6,6 +6,7 @@ import akka.http.scaladsl.server.Directives.{complete, extractRequest}
 import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler}
 import com.typesafe.scalalogging.LazyLogging
 import Utilities.getDuration
+import pers.rdara.akka.http.jackson.JacksonUtil
 import pers.rdara.akka.http.test.server.model.GenericErrorResponse
 import pers.rdara.akka.http.test.server.services.Metrics
 import pers.rdara.prometheus.wrapper.metrics.{DefaultMetrics, LabelledMetrics}
@@ -16,7 +17,7 @@ import javax.security.sasl.AuthenticationException
  * @author Ramesh Dara
 */
 
-abstract class CommonExceptionHandler(appContext: ApplicationContext) extends Jackson.AkkaHttpSupport with LazyLogging {
+abstract class CommonExceptionHandler(appContext: ApplicationContext) extends JacksonUtil.AkkaHttpSupport with LazyLogging {
 
   private def extractErrorRequest(e: Throwable): Directive1[(HttpRequest)] = {
     extractRequest.flatMap { request ⇒

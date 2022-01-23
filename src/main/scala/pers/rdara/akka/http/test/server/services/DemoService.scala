@@ -2,15 +2,16 @@ package pers.rdara.akka.http.test.server.services
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, Route}
+import pers.rdara.akka.http.jackson.JacksonUtil
 import pers.rdara.akka.http.test.server.common.Utilities.getBaseUrl
-import pers.rdara.akka.http.test.server.common.{ApplicationContext, Jackson}
+import pers.rdara.akka.http.test.server.common.ApplicationContext
 import pers.rdara.akka.http.test.server.model.ServiceRoutes
 
 /**
   * @author Ramesh Dara
   * @since Jun-2019
   */
-class DemoService(appContext: ApplicationContext) extends ServiceRoutes with Directives with Jackson.AkkaHttpSupport {
+class DemoService(appContext: ApplicationContext) extends ServiceRoutes with Directives with JacksonUtil.AkkaHttpSupport {
   case class message(msg: String)
   override val routes: Route = {
     ignoreTrailingSlash {
