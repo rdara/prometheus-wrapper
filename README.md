@@ -11,6 +11,8 @@ The following package that support metrics should be of primary interest:
 > 
 >./gradelw run
 
+And in a separate console/window, try out the service with the following REST APIs
+
 >curl http://localhost:12345/demo/short
 > 
 >curl http://localhost:12345/demo/long
