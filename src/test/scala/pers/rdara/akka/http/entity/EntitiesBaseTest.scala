@@ -10,13 +10,14 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 import pers.rdara.akka.http.entity.model.{TestEntities, TestEntity, TestResponse}
 import pers.rdara.akka.http.entity.service.InputMessage
 import pers.rdara.akka.http.jackson.JacksonUtil
-import pers.rdara.akka.http.test.server.common.ApplicationConfig
+import pers.rdara.akka.http.test.server.common.{ApplicationConfig, ApplicationContext}
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import EntitiesBaseTest._
+import pers.rdara.akka.http.test.server.common.Utilities.{getBaseUrl, getUniqueRequestId}
 
 import scala.io.Source
 import scala.util.Try
@@ -80,12 +81,6 @@ abstract class EntitiesBaseTest extends FlatSpec with TestExecutionContext with 
     }
   }
 
-  def getUniqueRequestId(customValue: String = ""): String = {
-    val randomNumber: Long = (0xffffffffL * Math.random()).toLong
-    val time               = new SimpleDateFormat("hh:mm:ss.SSS").format(Calendar.getInstance().getTime())
-    f"TEST|${randomNumber}%08X|$time|${customValue}"
-  }
-
   def displayResults(results: IndexedSeq[TestResponse], startTime: Long): Boolean = {
     val duration = (System.currentTimeMillis - startTime) / 1000.0
     val times    = results.size
@@ -109,12 +104,13 @@ abstract class EntitiesBaseTest extends FlatSpec with TestExecutionContext with 
 }
 
 object EntitiesBaseTest {
-  val baseUri = s"${ApplicationConfig.Default.server.scheme}://${ApplicationConfig.Default.server.host}:${ApplicationConfig.Default.server.port}"
+  val baseUri = getBaseUrl(ApplicationContext.Default)
   val entitiesUri = Uri(s"$baseUri/entities/resolve")
   val applicationStatusUri = Uri(s"$baseUri/application/status")
 
   val isApplicationReady =  Try(Source.fromURL(s"${applicationStatusUri}").mkString.trim.equals("OK")).getOrElse(false)
 
   sys addShutdownHook {
+    //Add any cleanup wrt entities testing here
   }
 }
