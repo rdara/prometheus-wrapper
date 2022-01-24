@@ -1,0 +1,131 @@
+{
+  "entities": [
+    {
+      "utterances": [
+        "frog",
+        "frg",
+        "frogs",
+        "fog",
+        "salamander",
+        "toad"
+      ],
+      "responses": [
+        {
+          "_type": "AnimalEntity",
+          "value": "Amphibian"
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "albatrosses", 
+        "chicken", 
+        "hummingbird", 
+        "falcon", 
+        "flamingo", 
+        "ostrich", 
+        "owl", 
+        "parrot", 
+        "penguin",
+        "pigeon"
+      ],
+      "responses": [
+        {
+          "_type": "AnimalEntity",
+          "value": "Bird"
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "eel", 
+        "hagfish", 
+        "lamprey", 
+        "minnow", 
+        "ray", 
+        "salmon", 
+        "seahorse", 
+        "shark"
+      ],
+      "responses": [
+        {
+          "_type": "AnimalEntity",
+          "value": "Fish"
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "aardvark", 
+        "bat", 
+        "elephant", 
+        "hamster", 
+        "human", 
+        "rabbit", 
+        "rhinocerose", 
+        "whale"
+      ],
+      "responses": [
+        {
+          "_type": "AnimalEntity",
+          "value": "Mammal"
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "crocodile", 
+        "gecko", 
+        "lizard", 
+        "sea turtle", 
+        "snake", 
+        "tortoise", 
+        "turtle"
+      ],
+      "responses": [
+        {
+          "_type": "AnimalEntity",
+          "value": "Reptile"
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "true",
+        "yes",
+        "s",
+        "yep"
+      ],
+      "responses": [
+        {
+          "_type": "BooleanEntity",
+          "value": true
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "no",
+        "nope",
+        "false"
+      ],
+      "responses": [
+        {
+          "_type": "BooleanEntity",
+          "value": false
+        }
+      ]
+    },
+    {
+      "utterances": [
+        "123.456"
+      ],
+      "responses": [
+        {
+          "_type": "NumberEntity",
+          "value": 123.456
+        }
+      ]
+    }
+  ]
+}

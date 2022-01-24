@@ -9,7 +9,7 @@ import pers.rdara.prometheus.wrapper.metrics.interfaces.MetricsInterface
 class DefaultMetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  BeforeAndAfterEach {
 
   val defaultMetric: AbstractMetrics = DefaultMetrics
-  val metricKeys: Seq[String] = Seq("group","module","test")
+  val metricKeys: Seq[String] = Seq("group","module","test", "default")
   val getMetrics = PrivateMethod[(MetricValue)]('getMetrics)
   val metricValue = defaultMetric invokePrivate getMetrics(metricKeys)
 //  val metricValue =  defaultMetric invokePrivate getMetrics(metricKeys, Seq.empty[String])
@@ -34,33 +34,6 @@ class DefaultMetricsTest extends FlatSpec with Matchers with PrivateMethodTester
     metricValue.total.get - baseTotalMessages shouldBe 0
     metricValue.inflight.get - baseInflightMessages shouldBe 0
     metricValue.processingTime.get().count - baseProcessingTimeCount shouldBe 0
-  }
-
-  //The following tests have their own exclusive metric key sets and doenst depend upon beforeEach values
-  it should "correctly count 1  message with null keyset" in {
-    val curMetricKeySet = null
-    val priorMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
-    val priorTotal = priorMetricValue.total.get.toInt
-    defaultMetric.startMessage(curMetricKeySet)
-
-    defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
-    defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
-
-    val currentMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
-    currentMetricValue.total.get - priorTotal shouldBe 1
-  }
-
-  it should "correctly count 1  message with empty keyset" in {
-    val curMetricKeySet = Seq.empty[String]
-    val priorMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
-    val priorTotal = priorMetricValue.total.get.toInt
-    defaultMetric.startMessage(curMetricKeySet)
-
-    defaultMetric.getActiveMessagesCount - baseActiveMessageCount shouldBe 1
-    defaultMetric.getTotalMessagesCount - baseTotalMessageCount shouldBe 1
-
-    val currentMetricValue = defaultMetric invokePrivate getMetrics(curMetricKeySet)
-    currentMetricValue.total.get.toInt - priorTotal shouldBe 1
   }
 
   it should "correctly count 1  message with keyset with null values" in {

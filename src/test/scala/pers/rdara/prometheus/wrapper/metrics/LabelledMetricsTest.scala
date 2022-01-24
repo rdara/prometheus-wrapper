@@ -8,12 +8,12 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers,
  */
 class LabelledMetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  BeforeAndAfterEach with BeforeAndAfterAll {
 
-  System.setProperty("akka.http.conf.metrics.no_of_labels","2")
-  System.setProperty("akka.http.conf.metrics.label_names", "label_1,label_2")
+  System.setProperty("akka.http.conf.metrics.no_of_labels","4")
+  System.setProperty("akka.http.conf.metrics.label_names", "label_1,label_2,label_3,label_4")
 
   val labelledMetrics: AbstractMetrics = LabelledMetrics
-  val metricKeys: Seq[String] = Seq("group","module","test")
-  val labelValues: Seq[String] = Seq("value_1","value_2")
+  val metricKeys: Seq[String] = Seq("group","module","test","labelled")
+  val labelValues: Seq[String] = Seq("value_1","value_2","value_3","value-4")
   val getMetrics = PrivateMethod[(MetricValue)]('getMetrics)
   val metricValue =  labelledMetrics invokePrivate getMetrics(metricKeys, labelValues)
 
@@ -169,11 +169,11 @@ class LabelledMetricsTest extends FlatSpec with Matchers with PrivateMethodTeste
 
   "No duplicate registrations" should "occur with the same keys" in {
 
-    labelledMetrics.startMessage(Seq("outbound","email", "dup"), labelValues)
-    labelledMetrics.startMessage(Seq("outbound","email", "dup"), labelValues)
-    labelledMetrics.startMessage(Seq("outbound","email", "dup"), labelValues)
+    labelledMetrics.startMessage(Seq("outbound","email", "dup", "labelled"), labelValues)
+    labelledMetrics.startMessage(Seq("outbound","email", "dup", "labelled"), labelValues)
+    labelledMetrics.startMessage(Seq("outbound","email", "dup", "labelled"), labelValues)
 
-    val dupMetricValue = labelledMetrics invokePrivate getMetrics(Seq("outbound","email", "dup"), labelValues)
+    val dupMetricValue = labelledMetrics invokePrivate getMetrics(Seq("outbound","email", "dup", "labelled"), labelValues)
 
     dupMetricValue.total.labels(labelValues: _*).get shouldBe 3
   }
@@ -181,10 +181,10 @@ class LabelledMetricsTest extends FlatSpec with Matchers with PrivateMethodTeste
   "Concurrent registrations" should "work as expected" in {
 
    (1 to 50).par.foreach {
-      _ => labelledMetrics.startMessage(Seq("outbound","email", "par"), labelValues)
+      _ => labelledMetrics.startMessage(Seq("outbound","email", "par", "labelled"), labelValues)
     }
 
-    val dupMetricValue = labelledMetrics invokePrivate getMetrics(Seq("outbound","email", "par"), labelValues)
+    val dupMetricValue = labelledMetrics invokePrivate getMetrics(Seq("outbound","email", "par", "labelled"), labelValues)
 
     dupMetricValue.total.labels(labelValues: _*).get.toInt shouldBe 50
   }

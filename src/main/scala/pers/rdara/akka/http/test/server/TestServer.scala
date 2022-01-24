@@ -5,9 +5,11 @@ import akka.http.scaladsl.server.{RejectionHandler, Route}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
-import pers.rdara.akka.http.test.server.common.{ApplicationConfig, ApplicationContext, CommonExceptionHandler, PrometheusMetricsDirectives}
-import pers.rdara.akka.http.test.server.common.Jackson.AkkaHttpSupport
+import pers.rdara.akka.http.entity.service.EntityService
+import pers.rdara.akka.http.test.server.common.{ApplicationConfig, ApplicationContext, CommonExceptionHandler, PrometheusMetricsDirectives, RequestInterceptor}
+import pers.rdara.akka.http.jackson.JacksonUtil.AkkaHttpSupport
 import pers.rdara.akka.http.test.server.services.{DemoService, MetricsService}
+import pers.rdara.lifecycle.ApplicationService
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -17,7 +19,11 @@ import scala.util.{Failure, Success}
  * @author Ramesh Dara
 */
 
-class TestServer(appContext: ApplicationContext) extends CommonExceptionHandler(appContext) with PrometheusMetricsDirectives with LazyLogging {
+class TestServer(appContext: ApplicationContext) extends CommonExceptionHandler(appContext)
+  with RequestInterceptor
+  with PrometheusMetricsDirectives
+  with LazyLogging {
+
   import appContext.Implicits._
   implicit val timeout: Timeout = Timeout(10.seconds)
 
@@ -27,7 +33,9 @@ class TestServer(appContext: ApplicationContext) extends CommonExceptionHandler(
 
     val services: Route = List(
       new MetricsService(appContext),
-      new DemoService(appContext)
+      new DemoService(appContext),
+      new EntityService(appContext),
+      new ApplicationService(appContext)
     ).map(_.routes).reduceLeft(_ ~ _)
 
     val rejectionHandler = AkkaHttpSupport.rejectionHandler withFallback RejectionHandler.default
@@ -35,13 +43,17 @@ class TestServer(appContext: ApplicationContext) extends CommonExceptionHandler(
     val aggregatedRoutes = injectStartTimeHeader(materializer) {
         handleRejections(rejectionHandler) {
           handleExceptions(exceptionHandler) {
-            initiatePrometheusMetrics(materializer) {
-              completePrometheusMetrics(materializer) {
-                services
+            injectUniqueIDHeader(materializer) {
+              logRequestUniqueId(materializer) {
+                initiatePrometheusMetrics(materializer) {
+                  completePrometheusMetrics(materializer) {
+                    services
+                  }
+                }
+              }
             }
           }
         }
-      }
     }
 
     val bindingFuture = appContext.http.bindAndHandle(aggregatedRoutes, bind, port)

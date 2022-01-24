@@ -32,6 +32,9 @@ dependencies {
     implementation "com.typesafe.akka:akka-http_${versions.scala}:${versions.akkahttp}"
     implementation "com.typesafe.akka:akka-http-jackson_${versions.scala}:${versions.akkahttp}"
 
+    //apache
+    implementation "org.apache.commons:commons-text:${versions.commons_text}"
+
     //tests
     testImplementation "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}"
     testImplementation "org.pegdown:pegdown:${versions.pegdown}"

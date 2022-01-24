@@ -11,12 +11,15 @@ The following package that support metrics should be of primary interest:
 > 
 >./gradelw run
 
+And in a separate console/window, try out the service with the following REST APIs
+
 >curl http://localhost:12345/demo/short
 > 
 >curl http://localhost:12345/demo/long
 > 
 >curl http://localhost:12345/demo/error
 > 
+> curl --request POST 'http://localhost:12345/entities/resolve' --header 'Content-Type: application/json' --data-raw '{"utterance" : "frg"}'
 
 and observe metrics with:
 >curl http://localhost:12345/metrics
@@ -63,7 +66,7 @@ Decide which keys you would like to use and everything else is provisioned by th
 Decide which keys and labels you would like to use and everything else is provisioned by this prometheus_wrapper's DefaultMetrics.
 
 #### metrics.conf or system properties
-akka.http.conf.metrics.max_no_of_labels
+akka.http.conf.metrics.no_of_labels
 akka.http.conf.metrics.label_names
 akka.http.conf.metrics.labelled_keys
 
@@ -132,4 +135,25 @@ versions_$xxxx.gradle is an idea to consolidate the "versions" of all the depend
 The backward incompatible nature of scala has challenged the scala developers and there are scala verion dependencies everywhere. This approach mitigates this.
 Also, if one still wants to use the "same versions" of dependencies across the organization, then the versions file can reside as a git sub module and all the git modules could depend on that.
 
+# Concurrent REST API testing with Entities Example
 
+The POST "entities/resolve" demonstrates EntityService that resolves Number, Boolean and very primitive Animal. Refer pers.rdara.akka.http.entity.service.EntityService
+Also demonstrates JaroWrinkler and Levenshtein Distance for similarity matching of words. Refer pers.rdara.akka.http.entity.SimilarityMatch.
+
+For example the following request 
+> curl --request POST 'http://localhost:12345/entities/resolve' --header 'Content-Type: application/json' --data-raw '{"utterance" : "frg"}'
+
+yields
+>  {
+"_type": "AnimalEntity",
+"value": "Amphibian"
+}
+
+Similarly, 
+{"utterance" : "123"} yields {"_type": "NumberEntity","value": 123.0}
+{"utterance" : "yep"} yields {"_type": "BooleanEntity","value": true}
+{"utterance" : "whale"} yields {"_type": "AnimalEntity","value": "Mammal"}
+{"utterance" : "xxx"} yields {"message": "xxx is not an recognized entity"}
+
+## ConcurrentEntitiesTest
+The ConcurrentEntitiesTest at  pers.rdara.akka.http.entity demonstrates firing concurrent requests and verifying that each reqwuest received its expected response.
