@@ -10,7 +10,7 @@ import scala.collection.JavaConverters._
 //A glimpse of typesafe:config usage
 // https://github.com/lightbend/config
 class ApplicationConfig(val underlying: Config) {
-  private val prefix = "akka.http.conf"
+  private val prefix = "application"
   object server {
     private val server = s"$prefix.server"
     val scheme: String = underlying.getString(s"$server.scheme")

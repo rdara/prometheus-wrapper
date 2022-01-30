@@ -40,7 +40,7 @@ class DefaultApplicationContext extends ApplicationContext with LazyLogging {
   override val appConfig: ApplicationConfig = ApplicationConfig.Default
   override implicit lazy val system: ActorSystem = ActorSystem("prometheus-wrapper-demo", appConfig.underlying)
   override implicit lazy val materializer: ActorMaterializer = ActorMaterializer()(system)
-  override implicit lazy val ec: ExecutionContext = system.dispatchers.lookup("akka.http.conf.blocking-io-dispatcher")
+  override implicit lazy val ec: ExecutionContext = system.dispatchers.lookup("application.blocking-io-dispatcher")
   override lazy val http: HttpExt = Http()(system)
 }
 
