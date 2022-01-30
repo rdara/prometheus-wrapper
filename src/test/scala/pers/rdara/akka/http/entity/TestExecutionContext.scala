@@ -3,6 +3,7 @@ package pers.rdara.akka.http.entity
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.{ActorMaterializer, Materializer}
+import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Milliseconds, Minutes, Seconds, Span}
 import pers.rdara.akka.http.test.server.common.ApplicationContext.Default.appConfig
@@ -12,6 +13,12 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 
 
 trait TestExecutionContext extends ScalaFutures {
+
+  val testConfig = ConfigFactory
+    .systemProperties()
+    .withFallback(ConfigFactory.parseResources("config/tests.conf"))
+    .resolve()
+
   implicit val system: ActorSystem        = ActorSystem("EntitiesTests", appConfig.underlying)
   implicit val materializer: Materializer = ActorMaterializer()(system)
 

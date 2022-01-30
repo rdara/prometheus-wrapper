@@ -10,10 +10,8 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 import pers.rdara.akka.http.entity.model.{TestEntities, TestEntity, TestResponse}
 import pers.rdara.akka.http.entity.service.InputMessage
 import pers.rdara.akka.http.jackson.JacksonUtil
-import pers.rdara.akka.http.test.server.common.{ApplicationConfig, ApplicationContext}
+import pers.rdara.akka.http.test.server.common.ApplicationContext
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import EntitiesBaseTest._

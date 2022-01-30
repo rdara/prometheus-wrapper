@@ -21,11 +21,11 @@ object AnimalEntity {
     ))
 
   def apply(text: String): AnimalEntity = {
-    animalEntityDefinition.values.map { entityValue =>
-      if(SimilarityMatch.matchesAny(text, entityValue.synonyms)) {
+    animalEntityDefinition.values.foreach(entityValue => {
+      if (SimilarityMatch.matchesAny(text, entityValue.synonyms)) {
         return new AnimalEntity(entityValue.value)
       }
-    }
-    throw new UnrecognizedEntityException(s"${text} is not matched to any of Animal Entity Classifications")
+    })
+    throw new UnrecognizedEntityException(s"$text is not matched to any of Animal Entity Classifications")
   }
 }
