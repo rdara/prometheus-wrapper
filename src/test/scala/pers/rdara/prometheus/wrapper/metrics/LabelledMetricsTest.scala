@@ -8,8 +8,8 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers,
  */
 class LabelledMetricsTest extends FlatSpec with Matchers with PrivateMethodTester with  BeforeAndAfterEach with BeforeAndAfterAll {
 
-  System.setProperty("akka.http.conf.metrics.no_of_labels","4")
-  System.setProperty("akka.http.conf.metrics.label_names", "label_1,label_2,label_3,label_4")
+  System.setProperty("application.metrics.no_of_labels","4")
+  System.setProperty("application.metrics.label_names", "label_1,label_2,label_3,label_4")
 
   val labelledMetrics: AbstractMetrics = LabelledMetrics
   val metricKeys: Seq[String] = Seq("group","module","test","labelled")
@@ -28,13 +28,13 @@ class LabelledMetricsTest extends FlatSpec with Matchers with PrivateMethodTeste
   var prior_label_names = ""
 
   override def beforeAll(): Unit = {
-    prior_no_of_labels = System.getProperty("akka.http.conf.metrics.no_of_labels")
-    prior_no_of_labels = System.getProperty("akka.http.conf.metrics.label_names")
+    prior_no_of_labels = System.getProperty("application.metrics.no_of_labels")
+    prior_no_of_labels = System.getProperty("application.metrics.label_names")
   }
 
   override def afterAll(): Unit = {
-    System.setProperty("akka.http.conf.metrics.no_of_labels", prior_no_of_labels)
-    System.setProperty("akka.http.conf.metrics.label_names", prior_label_names)
+    System.setProperty("application.metrics.no_of_labels", prior_no_of_labels)
+    System.setProperty("application.metrics.label_names", prior_label_names)
   }
 
   override def beforeEach(): Unit = {

@@ -47,7 +47,7 @@ There are 2 scala singleton objects, DefaultMetrics and LabelledMetrics are avai
 ### DefaultMetrics 
 Decide which keys you would like to use and everything else is provisioned by this prometheus_wrapper's DefaultMetrics.
 
-#### metrics.conf or akka.http.conf.metrics.default_keys system property
+#### metrics.conf or application.metrics.default_keys system property
 >DefaultMetrics.startMessage()
 > 
 >DefaultMetrics.completedMessage(getDuration(ctx.request))
@@ -66,9 +66,9 @@ Decide which keys you would like to use and everything else is provisioned by th
 Decide which keys and labels you would like to use and everything else is provisioned by this prometheus_wrapper's DefaultMetrics.
 
 #### metrics.conf or system properties
-akka.http.conf.metrics.no_of_labels
-akka.http.conf.metrics.label_names
-akka.http.conf.metrics.labelled_keys
+application.metrics.no_of_labels
+application.metrics.label_names
+application.metrics.labelled_keys
 
 >LabelledMetrics.startMessage(Metrics.getMetricLables(request))
 >
@@ -88,7 +88,7 @@ The following resource file provides the configuration
 >prometheus-wrapper/src/main/resources/metrics.conf
 
 System properties like 
->**akka.http.conf.metrics.no_of_labels**
+>**application.metrics.no_of_labels**
 > 
 prevail over the metrics.conf. System properties do take precedence. 
 pers.rdara.prometheus.wrapper.metrics.LabelledMetricsTest test demonstrates system properties precedence.
@@ -155,5 +155,36 @@ Similarly,
 {"utterance" : "whale"} yields {"_type": "AnimalEntity","value": "Mammal"}
 {"utterance" : "xxx"} yields {"message": "xxx is not an recognized entity"}
 
+## SynchronousEntitiesTest
+The SynchronousEntitiesTest at pers.rdara.akka.http.entity demonstrating testing of http request/responses sequentially.
+
 ## ConcurrentEntitiesTest
-The ConcurrentEntitiesTest at  pers.rdara.akka.http.entity demonstrates firing concurrent requests and verifying that each reqwuest received its expected response.
+The ConcurrentEntitiesTest at  pers.rdara.akka.http.entity demonstrates firing concurrent requests and verifying that each request received its expected response.
+
+# Testing Patterns
+
+## Preconditions
+
+The pers.rdara.akka.http.entity.EntitiesBaseTest "assume" demonstrates skipping of tests if the dependencies like
+connectivity to the application under test. In this case, the tests are run only if the metrics application runs.
+
+## Indefinite Test Data
+
+The pers.rdara.akka.http.entity.model.TestEntities demonstrates indefinite test data by looping thru  the available data with "next" analogous to the iterator.
+
+## Correlating Tests for Diagnosis - UNIQUE-REQUEST-ID
+
+When the tests run concurrently and if a failure occurs, you require to correlate the test, its data and the server side logs.
+The "UNIQUE-REQUEST-ID" thats unique with each test will be sent to server and server logs this value. This pattern also helpful, when a transaction has to go through multiple micro services and you need to track the call across those microservices.
+
+## Test Result Summary with metrics
+
+The displayResults of pers.rdara.akka.http.entity.EntitiesBaseTest outlines the concurrent test results.
+
+Errors that aren't StatusCodes.OK = 0
+Success Percentage = 100. Successful Calls = 128 and Failed Calls = 0.
+Took 2.122 seconds to complete 128  calls in the test.
+
+This would help for data driven decision to fine tune server configurations.
+
+
